@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import java.util.ArrayList;
 
@@ -21,31 +22,34 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     ListView listView;
     ArrayList<Book> books;
     BookAdapter bookAdapter;
+    ProgressBar progressBar;
 
-   String link;
+    String link;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         listView = (ListView)findViewById(R.id.list_view);
-
+        progressBar = (ProgressBar)findViewById(R.id.loading_indicator) ;
+        progressBar.setVisibility(View.INVISIBLE);
         Button button = (Button)findViewById(R.id.search_button);
-
         editText = (EditText)findViewById(R.id.search) ;
+
+
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                
+                progressBar.setVisibility(View.VISIBLE);
                 String keyword = editText.getText().toString();
-                  link = "https://www.googleapis.com/books/v1/volumes?q="+keyword+"+intitle";
+                link = "https://www.googleapis.com/books/v1/volumes?q="+keyword+"+intitle";
                 LoaderManager loaderManager = getSupportLoaderManager();
                 loaderManager.initLoader(1 , null ,MainActivity.this).forceLoad();
+
                 listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-
 
                         Book book = bookAdapter.getItem(position);
                         Uri uri = Uri.parse(book.getLink());
@@ -76,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoadFinished(Loader<ArrayList<Book>> loader, ArrayList<Book> data) {
         bookAdapter = new BookAdapter(MainActivity.this ,data);
         listView.setAdapter(bookAdapter);
+        progressBar.setVisibility(View.INVISIBLE);
 
 
 
@@ -86,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onLoaderReset(Loader<ArrayList<Book>> loader) {
 
         loader.reset();
+        bookAdapter = null;
 
     }
 }
