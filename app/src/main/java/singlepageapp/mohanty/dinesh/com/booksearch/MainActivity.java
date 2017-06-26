@@ -23,6 +23,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     ArrayList<Book> books;
     BookAdapter bookAdapter;
     ProgressBar progressBar;
+    Button button;
+    LoaderManager loaderManager;
 
     String link;
     @Override
@@ -33,36 +35,31 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         listView = (ListView)findViewById(R.id.list_view);
         progressBar = (ProgressBar)findViewById(R.id.loading_indicator) ;
         progressBar.setVisibility(View.INVISIBLE);
-        Button button = (Button)findViewById(R.id.search_button);
+        button = (Button)findViewById(R.id.search_button);
         editText = (EditText)findViewById(R.id.search) ;
+        loaderManager = getSupportLoaderManager();
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
+                Book book = bookAdapter.getItem(position);
+                Uri uri = Uri.parse(book.getLink());
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(intent);
+                }
+
+            }
+        });
 
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                progressBar.setVisibility(View.VISIBLE);
-                String keyword = editText.getText().toString();
-                link = "https://www.googleapis.com/books/v1/volumes?q="+keyword+"+intitle";
-                LoaderManager loaderManager = getSupportLoaderManager();
-                loaderManager.initLoader(1 , null ,MainActivity.this).forceLoad();
-
-                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                        Book book = bookAdapter.getItem(position);
-                        Uri uri = Uri.parse(book.getLink());
-                        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                        if (intent.resolveActivity(getPackageManager()) != null) {
-                            startActivity(intent);
-                        }
-
-                    }
-                });
 
 
-
+                loaderManager.destroyLoader(1);
+                loaderManager.initLoader(1, null, MainActivity.this).forceLoad();
 
             }
         });
@@ -73,6 +70,9 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public Loader<ArrayList<Book>> onCreateLoader(int id, Bundle args) {
+        progressBar.setVisibility(View.VISIBLE);
+        String keyword = editText.getText().toString();
+        link = "https://www.googleapis.com/books/v1/volumes?q=" + keyword + "+intitle";
         return new BookLoader(MainActivity.this , link);
     }
 
@@ -81,17 +81,17 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         bookAdapter = new BookAdapter(MainActivity.this ,data);
         listView.setAdapter(bookAdapter);
         progressBar.setVisibility(View.INVISIBLE);
-
-
-
-
     }
+
+
 
     @Override
     public void onLoaderReset(Loader<ArrayList<Book>> loader) {
 
-        loader.reset();
-        bookAdapter = null;
+
+        listView.setAdapter(null);
+
+
 
     }
 }
