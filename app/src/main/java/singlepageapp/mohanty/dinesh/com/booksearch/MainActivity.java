@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     ProgressBar progressBar;
     Button button;
     LoaderManager loaderManager;
+    String keyword = "";
 
     String link;
     @Override
@@ -57,22 +58,25 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             @Override
             public void onClick(View v) {
 
+                progressBar.setVisibility(View.VISIBLE);
+                keyword = editText.getText().toString();
+                loaderManager.restartLoader(1 , null , MainActivity.this);
 
-                loaderManager.destroyLoader(1);
-                loaderManager.initLoader(1, null, MainActivity.this).forceLoad();
+
+
+
 
             }
         });
 
-
+        loaderManager.initLoader(1, null, MainActivity.this).forceLoad();
 
     }
 
     @Override
     public Loader<ArrayList<Book>> onCreateLoader(int id, Bundle args) {
-        progressBar.setVisibility(View.VISIBLE);
-        String keyword = editText.getText().toString();
         link = "https://www.googleapis.com/books/v1/volumes?q=" + keyword + "+intitle";
+
         return new BookLoader(MainActivity.this , link);
     }
 
@@ -81,6 +85,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         bookAdapter = new BookAdapter(MainActivity.this ,data);
         listView.setAdapter(bookAdapter);
         progressBar.setVisibility(View.INVISIBLE);
+        if (keyword.equals("")) {
+            listView.setVisibility(View.INVISIBLE);
+        }
+        else {
+            listView.setVisibility(View.VISIBLE);
+        }
     }
 
 
